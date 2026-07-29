@@ -1,0 +1,6 @@
+{
+  "name": "INTEGRA",
+  "description": "High-precision numerical integration engine implementing Trapezoidal and Simpson's 1/3 rules with live LaTeX formatting, mathematical derivations, and vector plots.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

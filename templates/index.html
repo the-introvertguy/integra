@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Numerical Integration Calculator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- KaTeX for rendering mathematical formulas -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <!-- MathLive for Desmos-like interactive math input -->
+    <script defer src="https://cdn.jsdelivr.net/npm/mathlive"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header & Navigation -->
+        <header class="app-header">
+            <div class="brand">
+                <div class="brand-logo" aria-hidden="true">
+                    <svg width="32" height="32" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" class="integra-logo-svg">
+                        <rect width="36" height="36" rx="10" fill="currentColor" class="logo-rect-bg"/>
+                        <path d="M22 9C19 9 17.5 11.5 17.5 15.5V20.5C17.5 24.5 16 27 13 27" stroke="currentColor" stroke-width="3" stroke-linecap="round" class="logo-integral-path"/>
+                        <circle cx="24.5" cy="10.5" r="2" fill="currentColor" class="logo-dot-1"/>
+                        <circle cx="10.5" cy="25.5" r="2" fill="currentColor" class="logo-dot-2"/>
+                    </svg>
+                </div>
+                <div class="brand-title">
+                    <h1>INTEGRA</h1>
+                    <p class="subtitle">Numerical Integration System</p>
+                </div>
+            </div>
+
+            <!-- Tabs, Theme Toggle & Info Button -->
+            <div class="header-right">
+                <nav class="nav-tabs" id="main-tabs" role="tablist">
+                    <button class="tab-btn active" data-tab="trapezoidal" id="tab-trapezoidal" role="tab" aria-selected="true">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 20h18L18 4H6L3 20z"/>
+                        </svg>
+                        <span>Trapezoidal Rule</span>
+                    </button>
+                    <button class="tab-btn" data-tab="simpson" id="tab-simpson" role="tab" aria-selected="false">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 20c3-10 6-16 9-16s6 6 9 16"/>
+                        </svg>
+                        <span>Simpson's 1/3 Rule</span>
+                    </button>
+                </nav>
+
+                <div class="nav-actions">
+                    <!-- Light / Dark Theme Switcher -->
+                    <button type="button" id="theme-toggle-btn" class="action-btn" title="Toggle Light / Dark Mode" aria-label="Toggle Theme">
+                        <svg id="theme-icon-sun" class="theme-icon hidden" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                        </svg>
+                        <svg id="theme-icon-moon" class="theme-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                        </svg>
+                        <span id="theme-toggle-text">Dark</span>
+                    </button>
+
+                    <!-- Info / About Button -->
+                    <button type="button" id="info-toggle-btn" class="action-btn" title="About INTEGRA & Developer Team" aria-label="About Team">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+                        </svg>
+                        <span>Info</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="app-main">
+            <!-- Form Card -->
+            <section class="card form-card">
+                <div class="card-header">
+                    <div class="card-title-group">
+                        <h2 id="method-title">Trapezoidal Rule Setup</h2>
+                        <p id="method-desc" class="card-desc">Integrate continuous functions using linear trapezoidal summation.</p>
+                    </div>
+                </div>
+
+                <form id="integration-form" novalidate>
+                    <input type="hidden" id="method-input" value="trapezoidal">
+
+                    <!-- Function Input -->
+                    <div class="form-group">
+                        <label for="func-input" class="form-label">
+                            <span>Function f(x)</span>
+                        </label>
+                        
+                        <!-- Desmos Math Input Container -->
+                        <div class="desmos-input-container">
+                            <div class="input-wrapper desmos-wrapper">
+                                <span class="input-prefix">f(x) =</span>
+                                <input type="text" id="func-input" class="form-control code-font" placeholder="x^2 + 3^x - log(1/x)" value="x^2 + 3^x - log(1/x)" required autocomplete="off">
+                            </div>
+
+                            <!-- Live Math LaTeX Preview Badge -->
+                            <div class="math-preview-card" id="math-preview-card">
+                                <span class="preview-label">Live Formula:</span>
+                                <div id="math-live-preview" class="math-live-preview"></div>
+                            </div>
+
+                            <!-- Desmos Quick Math Toolbar -->
+                            <div class="math-toolbar" id="math-toolbar">
+                                <button type="button" class="math-tool-btn" data-math="frac" title="Fraction (/)"><span><sup>a</sup>&frasl;<sub>b</sub></span></button>
+                                <button type="button" class="math-tool-btn" data-math="power" title="Exponent (^)"><span>x<sup>n</sup></span></button>
+                                <button type="button" class="math-tool-btn" data-math="sqrt" title="Square Root"><span>&radic;x</span></button>
+                                <button type="button" class="math-tool-btn" data-math="sin" title="Sine"><span>sin</span></button>
+                                <button type="button" class="math-tool-btn" data-math="cos" title="Cosine"><span>cos</span></button>
+                                <button type="button" class="math-tool-btn" data-math="tan" title="Tangent"><span>tan</span></button>
+                                <button type="button" class="math-tool-btn" data-math="exp" title="Exponential"><span>e<sup>x</sup></span></button>
+                                <button type="button" class="math-tool-btn" data-math="log" title="Natural Logarithm"><span>ln</span></button>
+                                <button type="button" class="math-tool-btn" data-math="pi" title="Pi (&pi;)"><span>&pi;</span></button>
+                            </div>
+                        </div>
+
+                        <!-- Presets -->
+                        <div class="presets-wrapper">
+                            <span class="presets-label">Quick Examples:</span>
+                            <div class="preset-chips">
+                                <button type="button" class="chip-btn" data-expr="x^2 + 3^x - log(1/x)" data-a="1" data-b="3" data-n="6">x^2 + 3^x - log(1/x)</button>
+                                <button type="button" class="chip-btn" data-expr="x^2 + 3*x - 5" data-a="1" data-b="5" data-n="6">x^2 + 3*x - 5</button>
+                                <button type="button" class="chip-btn" data-expr="sin(x)" data-a="0" data-b="3.14159" data-n="6">sin(x)</button>
+                                <button type="button" class="chip-btn" data-expr="1 / (1 + x^2)" data-a="0" data-b="1" data-n="6">1 / (1 + x^2)</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Limits & Interval Grid -->
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="a-input" class="form-label">Lower Limit (a)</label>
+                            <input type="number" step="any" id="a-input" class="form-control" placeholder="0" value="1" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="b-input" class="form-label">Upper Limit (b)</label>
+                            <input type="number" step="any" id="b-input" class="form-control" placeholder="1" value="5" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="n-input" class="form-label">
+                                <span>Intervals (n)</span>
+                                <span id="n-validation-tag" class="tag-badge">n &gt; 0</span>
+                            </label>
+                            <input type="number" step="1" id="n-input" class="form-control" placeholder="4" value="6" required min="1">
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="form-actions">
+                        <button type="submit" id="calculate-btn" class="btn btn-primary">
+                            <span class="btn-text">Calculate Definite Integral</span>
+                            <span class="btn-spinner hidden" aria-hidden="true"></span>
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Error Banner -->
+            <div id="error-banner" class="alert-card hidden" role="alert">
+                <div class="alert-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                </div>
+                <div class="alert-content">
+                    <h3 class="alert-title">Calculation Error</h3>
+                    <p id="error-message" class="alert-text"></p>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div id="results-container" class="results-wrapper hidden">
+                <!-- Primary Answer Card -->
+                <section class="card result-primary-card">
+                    <div class="result-hero">
+                        <div class="hero-header">
+                            <span id="res-method-tag" class="badge">Trapezoidal Rule</span>
+                            <span id="res-exec-time" class="exec-time">0.42 ms</span>
+                        </div>
+                        <div class="hero-body">
+                            <span class="hero-label">Definite Integral Estimate (I)</span>
+                            <div class="hero-value-group">
+                                <span id="res-value" class="hero-value">0.00000000</span>
+                            </div>
+                        </div>
+                        <div class="hero-meta-grid">
+                            <div class="meta-item">
+                                <span class="meta-label">Function f(x)</span>
+                                <span id="res-func" class="meta-val code-font">x^2 + 3*x - 5</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Interval [a, b]</span>
+                                <span id="res-interval" class="meta-val">[1.0, 5.0]</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Step Size (h)</span>
+                                <span id="res-step-size" class="meta-val code-font">0.666667</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Intervals (n)</span>
+                                <span id="res-intervals-cnt" class="meta-val">6</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Grid layout for Formula + Breakdown -->
+                <div class="results-grid">
+                    <!-- Formula & Steps Card -->
+                    <section class="card">
+                        <div class="card-header">
+                            <h3>Mathematical Formula &amp; Derivation</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="formula-box" id="res-formula-box">
+                                <!-- HTML Formula injected dynamically -->
+                            </div>
+                            <div class="steps-list">
+                                <h4 class="sub-heading">Step-by-Step Execution</h4>
+                                <ol id="res-steps-list" class="ordered-steps"></ol>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Simpson Specific Sums (Only shown if Simpson's) -->
+                    <section id="simpson-sums-card" class="card hidden">
+                        <div class="card-header">
+                            <h3>Index Summation Breakdown</h3>
+                        </div>
+                        <div class="card-body sums-grid">
+                            <div class="sum-card">
+                                <span class="sum-title">Odd-Index Sum <span id="res-odd-sum-katex"></span></span>
+                                <span class="sum-multiplier">&times; 4 Weight</span>
+                                <div id="res-odd-sum" class="sum-value code-font">0.000000</div>
+                            </div>
+                            <div class="sum-card">
+                                <span class="sum-title">Even-Index Sum <span id="res-even-sum-katex"></span></span>
+                                <span class="sum-multiplier">&times; 2 Weight</span>
+                                <div id="res-even-sum" class="sum-value code-font">0.000000</div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Calculation Table Card -->
+                <section class="card">
+                    <div class="card-header table-header-flex">
+                        <div>
+                            <h3>Numerical Discretization Table</h3>
+                            <p class="card-desc">Evaluated function values across all n+1 grid points.</p>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th class="col-center"><span id="th-i">i</span></th>
+                                    <th><span id="th-xi">x_i</span></th>
+                                    <th><span id="th-fxi">f(x_i)</span></th>
+                                    <th class="col-center"><span id="th-ci">c_i</span></th>
+                                    <th><span id="th-cifxi">c_i \cdot f(x_i)</span></th>
+                                </tr>
+                            </thead>
+                            <tbody id="res-table-body">
+                                <!-- Rows injected by JS -->
+                            </tbody>
+                            <tfoot id="res-table-foot">
+                                <!-- Totals injected by JS -->
+                            </tfoot>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Graph Plot Card -->
+                <section id="graph-card" class="card">
+                    <div class="card-header">
+                        <h3>Geometrical Integration Visualization</h3>
+                        <p class="card-desc">Function curve <span id="graph-func-latex"></span> with numerical approximation regions.</p>
+                    </div>
+                    <div class="card-body graph-container">
+                        <img id="res-plot-img" src="" alt="Integration Graph Plot" class="plot-img">
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p>INTEGRA &bull; Academic Numerical Integration Suite &bull; Made with <svg class="footer-heart" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg> by Jihad</p>
+        </footer>
+    </div>
+
+    <!-- About / Team Info Modal -->
+    <div id="about-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="about-modal-title">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-brand">
+                    <div class="modal-brand-logo">
+                        <svg width="32" height="32" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" class="integra-logo-svg">
+                            <rect width="36" height="36" rx="10" fill="currentColor" class="logo-rect-bg"/>
+                            <path d="M22 9C19 9 17.5 11.5 17.5 15.5V20.5C17.5 24.5 16 27 13 27" stroke="currentColor" stroke-width="3" stroke-linecap="round" class="logo-integral-path"/>
+                            <circle cx="24.5" cy="10.5" r="2" fill="currentColor" class="logo-dot-1"/>
+                            <circle cx="10.5" cy="25.5" r="2" fill="currentColor" class="logo-dot-2"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 id="about-modal-title">About INTEGRA</h3>
+                        <p class="modal-subtitle">Numerical Methods Academic Laboratory</p>
+                    </div>
+                </div>
+                <button type="button" id="about-modal-close" class="modal-close-btn" aria-label="Close Modal">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                <p class="about-description">
+                    <strong>INTEGRA</strong> is a high-precision academic numerical computation platform for evaluating definite integrals using Trapezoidal and Simpson's 1/3 rules. It features live LaTeX formula parsing, exact step-by-step mathematical derivations, weighted sums, and continuous vector curve graphs.
+                </p>
+
+                <div class="developer-profile-card">
+                    <div class="profile-header">
+                        <div class="profile-avatar">
+                            <img src="/static/jihad_pfp.jpg" onerror="this.onerror=null;this.src='https://cdn.discordapp.com/attachments/878331193421099018/1532156094103683312/ala.jpg?ex=6a6bd30e&is=6a6a818e&hm=815cc5ac4d563d018c99f5cefe6e9dc1417531a85bce1314600f04cb96f48b7d&';" alt="Md Mehedi Hasan Jihad" class="profile-img" referrerPolicy="no-referrer" />
+                        </div>
+                        <div class="profile-title-group">
+                            <h4>Md Mehedi Hasan Jihad</h4>
+                            <span class="role-badge">Project Creator & Developer</span>
+                            <p class="univ-dept">Department of Computer Science & Engineering</p>
+                            <p class="univ-name">Daffodil International University</p>
+                        </div>
+                    </div>
+
+                    <div class="profile-grid">
+                        <div class="profile-item">
+                            <span class="item-label">Student ID</span>
+                            <span class="item-value code-font">242-15-883</span>
+                        </div>
+                        <div class="profile-item">
+                            <span class="item-label">Batch</span>
+                            <span class="item-value code-font">Batch 67</span>
+                        </div>
+                        <div class="profile-item">
+                            <span class="item-label">Level</span>
+                            <span class="item-value">Undergraduate Student</span>
+                        </div>
+                        <div class="profile-item">
+                            <span class="item-label">Department</span>
+                            <span class="item-value">Computer Science & Engineering</span>
+                        </div>
+                    </div>
+
+                    <div class="profile-links">
+                        <a href="https://github.com/the-introvertguy" target="_blank" rel="noopener noreferrer" class="social-link-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+                            <span>GitHub</span>
+                        </a>
+                        <a href="https://www.facebook.com/mehedihasanjihadii" target="_blank" rel="noopener noreferrer" class="social-link-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+                            <span>Facebook</span>
+                        </a>
+                        <a href="mailto:md.mehedi.jihad@gmail.com" class="social-link-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                            <span>md.mehedi.jihad@gmail.com</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
