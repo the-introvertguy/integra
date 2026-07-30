@@ -53,16 +53,16 @@ $$I \approx \frac{h}{3} \left[ f(x_0) + 4 \sum_{i \text{ odd}} f(x_i) + 2 \sum_{
 
 ```text
 numerical-integration-calculator/
-├── app.py                  # Flask web server & API endpoint routes
-├── integration.py          # Pure Python numerical algorithms & expression evaluator
+├── app.py
+├── integration.py
 ├── templates/
-│   └── index.html          # HTML5 layout with B&W Notion/Apple design
+│   └── index.html
 ├── static/
-│   ├── style.css           # B&W CSS styling system
-│   └── script.js           # Vanilla JS controller for tabs & AJAX calculation
-├── metadata.json           # Application metadata configuration
-├── package.json            # Node/npm process config for Cloud Run deployment
-└── README.md               # Project documentation
+│   ├── style.css
+│   └── script.js
+├── metadata.json
+├── package.json
+└── README.md
 ```
 
 ---
