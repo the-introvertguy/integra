@@ -4,11 +4,11 @@ A lightweight, modern web application for an academic **Numerical Methods** cour
 1. **Trapezoidal Rule**
 2. **Simpson's 1/3 Rule**
 
-Designed with a minimal **Black & White** aesthetic inspired by Apple and Notion, featuring pure Python mathematical algorithm implementations, step-by-step derivation tables, and function visualization graphs.
+Featuring pure Python mathematical algorithm implementations, step-by-step derivation tables, and function visualization graphs.
 
 ---
 
-## 📌 Features
+## Features
 
 - **Pure Python Math Implementation**: Numerical integration algorithms implemented manually from scratch without `numpy`, `scipy`, `sympy`, or `mpmath`.
 - **Safe Mathematical Expression Evaluator**: Evaluates user-entered functions safely using standard arithmetic and Python's built-in `math` functions (`sin`, `cos`, `tan`, `exp`, `log`, `sqrt`, `abs`, `pi`, `e`).
@@ -28,7 +28,7 @@ Designed with a minimal **Black & White** aesthetic inspired by Apple and Notion
 
 ---
 
-## 📐 Mathematical Formulas
+## Mathematical Formulas
 
 ### 1. Trapezoidal Rule
 
@@ -49,7 +49,7 @@ $$I \approx \frac{h}{3} \left[ f(x_0) + 4 \sum_{i \text{ odd}} f(x_i) + 2 \sum_{
 
 ---
 
-## 📁 Folder Structure
+## Folder Structure
 
 ```text
 numerical-integration-calculator/
@@ -67,7 +67,7 @@ numerical-integration-calculator/
 
 ---
 
-## 🚀 Installation & Running
+## Installation & Running
 
 ### Prerequisites
 
